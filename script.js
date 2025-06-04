@@ -1,199 +1,136 @@
-﻿const board = document.getElementById('board');
-const status = document.getElementById('status');
-const resetButton = document.getElementById('reset');
-const resetScoresButton = document.getElementById('resetScores');
-const modeSelect = document.getElementById('mode');
-const scoreXDisplay = document.getElementById('scoreX');
-const scoreODisplay = document.getElementById('scoreO');
-const winSound = document.getElementById('winSound');
-const loseSound = document.getElementById('loseSound');
+const board = Array(9).fill(null);
+const cells = document.querySelectorAll('.cell');
+const modeSelect = document.getElementById('modeSelect');
+const resetBtn = document.getElementById('resetBtn');
+const currentTurnEl = document.getElementById('currentTurn');
 
-let currentPlayer = 'X';
-let cells = Array(9).fill(null);
-let gameOver = false;
-let mode = 'human';
-let scoreX = 0;
-let scoreO = 0;
+let currentPlayer = 'X';  // X is ❌, O is ⭕ internally
+let gameActive = true;
 
-// Create cells
-board.innerHTML = '';
-for (let i = 0; i < 9; i++) {
-  const cell = document.createElement('div');
-  cell.classList.add('cell');
-  cell.dataset.index = i;
-  board.appendChild(cell);
-}
+// Emoji mapping
+const emojiMap = { 'X': '❌', 'O': '⭕' };
 
-function resetGame() {
-  cells.fill(null);
-  currentPlayer = 'X';
-  gameOver = false;
-  status.textContent = `Player ${currentPlayer}'s turn`;
-  document.querySelectorAll('.cell').forEach(cell => {
-    cell.textContent = '';
-    cell.classList.remove('winning');
-  });
-}
-
-function checkWinner() {
-  const winPatterns = [
-    [0,1,2], [3,4,5], [6,7,8],
-    [0,3,6], [1,4,7], [2,5,8],
-    [0,4,8], [2,4,6]
-  ];
-
-  for (const [a,b,c] of winPatterns) {
-    if (cells[a] && cells[a] === cells[b] && cells[b] === cells[c]) {
-      [a,b,c].forEach(i => document.querySelector(`[data-index="${i}"]`).classList.add('winning'));
-
-      if (cells[a] === 'X') {
-        scoreX++; scoreXDisplay.textContent = scoreX;
-        winSound.play();
-      } else {
-        scoreO++; scoreODisplay.textContent = scoreO;
-        (mode === 'human' ? winSound : loseSound).play();
-      }
-      return true;
-    }
+function updateTurnMessage() {
+  if (!gameActive) {
+    return; // keep the final message as is
   }
-
-  return false;
+  currentTurnEl.textContent = `Player ${emojiMap[currentPlayer]}'s turn`;
 }
 
-function makeMove(index) {
-  if (cells[index] || gameOver) return;
-
-  cells[index] = currentPlayer;
-  const cell = document.querySelector(`[data-index="${index}"]`);
-  cell.textContent = currentPlayer === 'X' ? '❌' : '🟢';
-
-  if (checkWinner()) {
-    status.textContent = `Player ${currentPlayer} wins!`;
-    gameOver = true;
-  } else if (cells.every(cell => cell !== null)) {
-    status.textContent = "It's a draw!";
-    gameOver = true;
-  } else {
-    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-    status.textContent = `Player ${currentPlayer}'s turn`;
-
-    if (mode !== 'human' && currentPlayer === 'O') {
-      setTimeout(aiMove, 500);
-    }
-  }
-}
-
-function aiMove() {
-  let index;
-  if (mode === 'easy') index = getRandomMove();
-  else if (mode === 'medium') index = getBlockingMove('X') ?? getRandomMove();
-  else if (mode === 'hard') index = getBestMove();
-  if (index !== undefined) makeMove(index);
-}
-
-function getRandomMove() {
-  const empty = cells.map((val, i) => val === null ? i : null).filter(i => i !== null);
-  return empty[Math.floor(Math.random() * empty.length)];
-}
-
-function getBlockingMove(player) {
+function checkWin(board, player) {
   const winPatterns = [
-    [0,1,2], [3,4,5], [6,7,8],
-    [0,3,6], [1,4,7], [2,5,8],
-    [0,4,8], [2,4,6]
+    [0,1,2],[3,4,5],[6,7,8],  // rows
+    [0,3,6],[1,4,7],[2,5,8],  // cols
+    [0,4,8],[2,4,6]           // diagonals
   ];
-
-  for (const [a, b, c] of winPatterns) {
-    const line = [cells[a], cells[b], cells[c]];
-    const indexes = [a, b, c];
-    if (line.filter(val => val === player).length === 2 && line.includes(null)) {
-      return indexes[line.indexOf(null)];
+  for (const pattern of winPatterns) {
+    if (pattern.every(index => board[index] === player)) {
+      return pattern;
     }
   }
   return null;
 }
 
-function getBestMove() {
-  let bestScore = -Infinity, move;
+function checkDraw(board) {
+  return board.every(cell => cell !== null);
+}
+
+function highlightWin(cellsToHighlight) {
+  cellsToHighlight.forEach(index => {
+    cells[index].classList.add('win-cell');
+  });
+}
+
+function resetGame() {
+  board.fill(null);
+  cells.forEach(cell => {
+    cell.textContent = '';
+    cell.classList.remove('win-cell', 'disabled');
+  });
+  currentPlayer = 'X';
+  gameActive = true;
+  updateTurnMessage();
+}
+
+function switchPlayer() {
+  currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+  updateTurnMessage();
+}
+
+function playerMove(index) {
+  if (!gameActive || board[index] !== null) return;
+
+  board[index] = currentPlayer;
+  cells[index].textContent = emojiMap[currentPlayer];
+  cells[index].classList.add('disabled');
+
+  const winningCells = checkWin(board, currentPlayer);
+  if (winningCells) {
+    highlightWin(winningCells);
+    currentTurnEl.textContent = `Player ${emojiMap[currentPlayer]} wins!`;
+    gameActive = false;
+    return;
+  }
+  if (checkDraw(board)) {
+    currentTurnEl.textContent = "It's a draw!";
+    gameActive = false;
+    return;
+  }
+
+  switchPlayer();
+  if (modeSelect.value !== 'human' && currentPlayer === 'O') {
+    aiMove(modeSelect.value);
+  }
+}
+
+// Easy AI: random empty cell
+function easyAI() {
+  const emptyIndices = board.map((v,i) => v === null ? i : null).filter(i => i !== null);
+  const choice = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+  return choice;
+}
+
+// Medium AI: tries to win or block immediate threats, else random
+function mediumAI() {
   for (let i = 0; i < 9; i++) {
-    if (cells[i] === null) {
-      cells[i] = 'O';
-      const score = minimax(cells, 0, false);
-      cells[i] = null;
-      if (score > bestScore) {
-        bestScore = score;
-        move = i;
-      }
-    }
-  }
-  return move;
-}
-
-function minimax(board, depth, isMaximizing) {
-  const winner = getWinner(board);
-  if (winner !== null) {
-    const scores = { 'X': -10, 'O': 10, 'draw': 0 };
-    return scores[winner];
-  }
-
-  if (isMaximizing) {
-    let best = -Infinity;
-    for (let i = 0; i < 9; i++) {
-      if (board[i] === null) {
-        board[i] = 'O';
-        best = Math.max(best, minimax(board, depth + 1, false));
+    if (board[i] === null) {
+      board[i] = 'O';
+      if (checkWin(board, 'O')) {
         board[i] = null;
+        return i;
       }
+      board[i] = null;
     }
-    return best;
-  } else {
-    let best = Infinity;
-    for (let i = 0; i < 9; i++) {
-      if (board[i] === null) {
-        board[i] = 'X';
-        best = Math.min(best, minimax(board, depth + 1, true));
+  }
+  for (let i = 0; i < 9; i++) {
+    if (board[i] === null) {
+      board[i] = 'X';
+      if (checkWin(board, 'X')) {
         board[i] = null;
+        return i;
       }
-    }
-    return best;
-  }
-}
-
-function getWinner(board) {
-  const winPatterns = [
-    [0,1,2], [3,4,5], [6,7,8],
-    [0,3,6], [1,4,7], [2,5,8],
-    [0,4,8], [2,4,6]
-  ];
-
-  for (const [a, b, c] of winPatterns) {
-    if (board[a] && board[a] === board[b] && board[b] === board[c]) {
-      return board[a];
+      board[i] = null;
     }
   }
-
-  return board.every(cell => cell !== null) ? 'draw' : null;
+  return easyAI();
 }
 
-// Event Listeners
-board.addEventListener('click', (e) => {
-  if (!e.target.classList.contains('cell')) return;
-  const index = e.target.dataset.index;
-  if (currentPlayer === 'X' || mode === 'human') {
-    makeMove(index);
+// Hard AI: Minimax algorithm
+function minimax(newBoard, player) {
+  const availSpots = newBoard.map((v,i) => v === null ? i : null).filter(i => i !== null);
+
+  if (checkWin(newBoard, 'X')) {
+    return { score: -10 };
+  } else if (checkWin(newBoard, 'O')) {
+    return { score: 10 };
+  } else if (availSpots.length === 0) {
+    return { score: 0 };
   }
-});
 
-resetButton.addEventListener('click', resetGame);
+  const moves = [];
+  for (const i of availSpots) {
+    const move = {};
+    move.index = i;
+    newBoard[i] = player;
 
-resetScoresButton.addEventListener('click', () => {
-  scoreX = 0;
-  scoreO = 0;
-  scoreXDisplay.textContent = 0;
-  scoreODisplay.textContent = 0;
-});
-
-modeSelect.addEventListener('change', () => {
-  mode = modeSelect.value;
-  resetGame();
-});
+    if (player ===
