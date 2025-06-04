@@ -1,388 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Tic Tac Toe - Made by Nahom Website Development</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f0f0f5;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  h1 {
-    margin-top: 20px;
-    color: #222;
-  }
-  #game-container {
-    display: flex;
-    gap: 30px;
-    margin: 20px 0;
-  }
-  /* Board styles */
-  #board {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
-    gap: 5px;
-    background-color: #222;
-    padding: 5px;
-    border-radius: 12px;
-    user-select: none;
-  }
-  .cell {
-    background-color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 60px;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: background-color 0.3s, transform 0.2s;
-  }
-  .cell:hover {
-    background-color: #cce0ff;
-  }
-  .cell.disabled {
-    cursor: default;
-    color: #999;
-  }
-  /* Highlight winning cells */
-  .win-cell {
-    background-color: #90ee90 !important;
-    animation: glow 1s infinite alternate;
-  }
-  @keyframes glow {
-    from {
-      box-shadow: 0 0 10px 5px #32cd32;
-    }
-    to {
-      box-shadow: 0 0 20px 10px #228b22;
-    }
-  }
-  /* Control panel */
-  #controls {
-    margin-top: 15px;
-    text-align: center;
-  }
-  button {
-    background-color: #4a90e2;
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    margin: 0 8px;
-    font-size: 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  button:hover {
-    background-color: #357abd;
-  }
-  select {
-    padding: 8px 12px;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
-  /* Instructions panel */
-  #instructions {
-    background-color: #ffffffcc;
-    color: #333;
-    padding: 15px;
-    border-radius: 10px;
-    width: 280px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    user-select: none;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-  #instructions h2 {
-    margin-top: 0;
-    margin-bottom: 8px;
-  }
-  #instructions ul {
-    padding-left: 20px;
-    margin: 0;
-  }
-  /* Container with board and instructions */
-  #game-container {
-    justify-content: center;
-  }
-  /* Current turn message */
-  #currentTurn {
-    margin-bottom: 10px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #222;
-    user-select: none;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tic Tac Toe - Made by Nahom Website Development</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-<h1>Nahom-Tic Tac Toe</h1>
+  <h1>Nahom-Tic Tac Toe</h1>
 
-<div id="game-container">
-  <div>
-    <div id="currentTurn">Player X starts!</div>
-    <div id="board">
-      <!-- 9 cells -->
-      <div class="cell" data-index="0"></div>
-      <div class="cell" data-index="1"></div>
-      <div class="cell" data-index="2"></div>
-      <div class="cell" data-index="3"></div>
-      <div class="cell" data-index="4"></div>
-      <div class="cell" data-index="5"></div>
-      <div class="cell" data-index="6"></div>
-      <div class="cell" data-index="7"></div>
-      <div class="cell" data-index="8"></div>
+  <div id="game-container">
+    <div class="game-area">
+      <div id="currentTurn" class="turn-message">Player ❌ starts!</div>
+
+      <div id="board">
+        <!-- 9 cells -->
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+      </div>
+
+      <div id="controls">
+        <select id="modeSelect">
+          <option value="human">Human vs Human</option>
+          <option value="easy">Easy AI</option>
+          <option value="medium">Medium AI</option>
+          <option value="hard">Hard AI</option>
+        </select>
+        <button id="resetBtn">Restart Game</button>
+      </div>
     </div>
-    <div id="controls">
-      <select id="modeSelect">
-        <option value="human">Human vs Human</option>
-        <option value="easy">Easy AI</option>
-        <option value="medium">Medium AI</option>
-        <option value="hard">Hard AI</option>
-      </select>
-      <button id="resetBtn">Restart Game</button>
-    </div>
+
+    <aside id="instructions">
+      <h2>📖 How to Play</h2>
+      <ul>
+        <li>Player ❌ always goes first.</li>
+        <li>Players take turns placing their marks (❌ or ⭕) on empty squares.</li>
+        <li>Goal: get three marks in a row — horizontally, vertically, or diagonally.</li>
+        <li>Select game mode: play against a friend or AI with different difficulties.</li>
+        <li>Click "Restart Game" to start fresh anytime.</li>
+      </ul>
+    </aside>
   </div>
 
-  <div id="instructions">
-    <h2>How to Play</h2>
-    <ul>
-      <li>Player X always goes first.</li>
-      <li>Players take turns placing their marks (X or O) on empty squares.</li>
-      <li>The goal is to get three of your marks in a row: horizontally, vertically, or diagonally.</li>
-      <li>Use the mode selector to choose between playing against a friend or AI with different difficulties.</li>
-      <li>Click "Restart Game" to start over anytime.</li>
-    </ul>
-  </div>
-</div>
-
-<script>
-  const board = Array(9).fill(null);
-  const cells = document.querySelectorAll('.cell');
-  const modeSelect = document.getElementById('modeSelect');
-  const resetBtn = document.getElementById('resetBtn');
-  const currentTurnEl = document.getElementById('currentTurn');
-
-  let currentPlayer = 'X';
-  let gameActive = true;
-
-  function updateTurnMessage() {
-    if (!gameActive) {
-      currentTurnEl.textContent = 'Game over!';
-      return;
-    }
-    currentTurnEl.textContent = `Player ${currentPlayer}'s turn`;
-  }
-
-  function checkWin(board, player) {
-    const winPatterns = [
-      [0,1,2],[3,4,5],[6,7,8],  // rows
-      [0,3,6],[1,4,7],[2,5,8],  // cols
-      [0,4,8],[2,4,6]           // diagonals
-    ];
-    for (const pattern of winPatterns) {
-      if (pattern.every(index => board[index] === player)) {
-        return pattern;
-      }
-    }
-    return null;
-  }
-
-  function checkDraw(board) {
-    return board.every(cell => cell !== null);
-  }
-
-  function disableBoard() {
-    cells.forEach(cell => cell.classList.add('disabled'));
-  }
-
-  function enableBoard() {
-    cells.forEach(cell => cell.classList.remove('disabled'));
-  }
-
-  function highlightWin(cellsToHighlight) {
-    cellsToHighlight.forEach(index => {
-      cells[index].classList.add('win-cell');
-    });
-  }
-
-  function resetGame() {
-    board.fill(null);
-    cells.forEach(cell => {
-      cell.textContent = '';
-      cell.classList.remove('win-cell', 'disabled');
-    });
-    currentPlayer = 'X';
-    gameActive = true;
-    updateTurnMessage();
-  }
-
-  function switchPlayer() {
-    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-    updateTurnMessage();
-  }
-
-  function playerMove(index) {
-    if (!gameActive || board[index] !== null) return;
-
-    board[index] = currentPlayer;
-    cells[index].textContent = currentPlayer;
-    cells[index].classList.add('disabled');
-
-    const winningCells = checkWin(board, currentPlayer);
-    if (winningCells) {
-      highlightWin(winningCells);
-      currentTurnEl.textContent = `Player ${currentPlayer} wins!`;
-      gameActive = false;
-      return;
-    }
-    if (checkDraw(board)) {
-      currentTurnEl.textContent = "It's a draw!";
-      gameActive = false;
-      return;
-    }
-
-    switchPlayer();
-    if (modeSelect.value !== 'human' && currentPlayer === 'O') {
-      // AI's turn
-      aiMove(modeSelect.value);
-    }
-  }
-
-  // Easy AI: random empty cell
-  function easyAI() {
-    const emptyIndices = board.map((v,i) => v === null ? i : null).filter(i => i !== null);
-    const choice = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-    return choice;
-  }
-
-  // Medium AI: blocks player's immediate winning moves or random
-  function mediumAI() {
-    // Try to win
-    for (let i = 0; i < 9; i++) {
-      if (board[i] === null) {
-        board[i] = 'O';
-        if (checkWin(board, 'O')) {
-          board[i] = null;
-          return i;
-        }
-        board[i] = null;
-      }
-    }
-    // Block player win
-    for (let i = 0; i < 9; i++) {
-      if (board[i] === null) {
-        board[i] = 'X';
-        if (checkWin(board, 'X')) {
-          board[i] = null;
-          return i;
-        }
-        board[i] = null;
-      }
-    }
-    return easyAI();
-  }
-
-  // Hard AI: Minimax algorithm
-  function minimax(newBoard, player) {
-    const availSpots = newBoard.map((v,i) => v === null ? i : null).filter(i => i !== null);
-
-    if (checkWin(newBoard, 'X')) {
-      return { score: -10 };
-    } else if (checkWin(newBoard, 'O')) {
-      return { score: 10 };
-    } else if (availSpots.length === 0) {
-      return { score: 0 };
-    }
-
-    const moves = [];
-    for (const i of availSpots) {
-      const move = {};
-      move.index = i;
-      newBoard[i] = player;
-
-      if (player === 'O') {
-        const result = minimax(newBoard, 'X');
-        move.score = result.score;
-      } else {
-        const result = minimax(newBoard, 'O');
-        move.score = result.score;
-      }
-      newBoard[i] = null;
-      moves.push(move);
-    }
-
-    let bestMove;
-    if (player === 'O') {
-      let bestScore = -Infinity;
-      for (const move of moves) {
-        if (move.score > bestScore) {
-          bestScore = move.score;
-          bestMove = move;
-        }
-      }
-    } else {
-      let bestScore = Infinity;
-      for (const move of moves) {
-        if (move.score < bestScore) {
-          bestScore = move.score;
-          bestMove = move;
-        }
-      }
-    }
-    return bestMove;
-  }
-
-  function hardAI() {
-    const bestMove = minimax(board.slice(), 'O');
-    return bestMove.index;
-  }
-
-  function aiMove(level) {
-    if (!gameActive) return;
-    let index;
-    if (level === 'easy') {
-      index = easyAI();
-    } else if (level === 'medium') {
-      index = mediumAI();
-    } else {
-      index = hardAI();
-    }
-
-    // Simulate delay for better UX
-    setTimeout(() => {
-      playerMove(index);
-    }, 500);
-  }
-
-  // Event listeners
-  cells.forEach(cell => {
-    cell.addEventListener('click', () => {
-      if (modeSelect.value === 'human' || currentPlayer === 'X') {
-        playerMove(parseInt(cell.dataset.index));
-      }
-    });
-  });
-
-  resetBtn.addEventListener('click', resetGame);
-
-  modeSelect.addEventListener('change', () => {
-    resetGame();
-  });
-
-  // Initialize
-  updateTurnMessage();
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
