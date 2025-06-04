@@ -1,0 +1,80 @@
+﻿body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  color: white;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  padding: 40px;
+}
+
+h1 {
+  margin-bottom: 20px;
+  text-shadow: 2px 2px #00000044;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-gap: 12px;
+  justify-content: center;
+  margin: 20px auto;
+}
+
+.cell {
+  width: 100px;
+  height: 100px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  border: none;
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 2px 2px 5px #00000033;
+}
+
+.cell:hover {
+  background-color: #f0f0f0;
+}
+
+.cell.winning {
+  background-color: #90ee90;
+  animation: pop 0.4s ease-in-out 3 alternate;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); background-color: #aaffaa; }
+  100% { transform: scale(1); }
+}
+
+button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: white;
+  color: #0072ff;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 2px 2px 5px #00000033;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #e0e0e0;
+}
+
+.scoreboard {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
