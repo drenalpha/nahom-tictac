@@ -10,6 +10,10 @@ let gameActive = true;
 // Emoji mapping
 const emojiMap = { 'X': '❌', 'O': '⭕' };
 
+// Sound Effects
+const winSound = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
+const loseSound = new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg');
+
 function updateTurnMessage() {
   if (!gameActive) {
     return; // keep the final message as is
@@ -69,6 +73,7 @@ function playerMove(index) {
     highlightWin(winningCells);
     currentTurnEl.textContent = `Player ${emojiMap[currentPlayer]} wins!`;
     gameActive = false;
+    winSound.play();
     return;
   }
   if (checkDraw(board)) {
@@ -79,7 +84,7 @@ function playerMove(index) {
 
   switchPlayer();
   if (modeSelect.value !== 'human' && currentPlayer === 'O') {
-    aiMove(modeSelect.value);
+    setTimeout(() => aiMove(modeSelect.value), 400);
   }
 }
 
@@ -133,4 +138,74 @@ function minimax(newBoard, player) {
     move.index = i;
     newBoard[i] = player;
 
-    if (player ===
+    if (player === 'O') {
+      const result = minimax(newBoard, 'X');
+      move.score = result.score;
+    } else {
+      const result = minimax(newBoard, 'O');
+      move.score = result.score;
+    }
+
+    newBoard[i] = null;
+    moves.push(move);
+  }
+
+  let bestMove;
+  if (player === 'O') {
+    let bestScore = -Infinity;
+    for (const move of moves) {
+      if (move.score > bestScore) {
+        bestScore = move.score;
+        bestMove = move;
+      }
+    }
+  } else {
+    let bestScore = Infinity;
+    for (const move of moves) {
+      if (move.score < bestScore) {
+        bestScore = move.score;
+        bestMove = move;
+      }
+    }
+  }
+
+  return bestMove;
+}
+
+function aiMove(difficulty) {
+  if (!gameActive) return;
+
+  let moveIndex;
+  if (difficulty === 'easy') {
+    moveIndex = easyAI();
+  } else if (difficulty === 'medium') {
+    moveIndex = mediumAI();
+  } else if (difficulty === 'hard') {
+    moveIndex = minimax(board.slice(), 'O').index;
+  } else {
+    return; // Human mode no AI
+  }
+
+  if (moveIndex !== undefined) {
+    playerMove(moveIndex);
+  }
+}
+
+cells.forEach(cell => {
+  cell.addEventListener('click', () => {
+    if (currentPlayer === 'X' || modeSelect.value === 'human') {
+      playerMove(parseInt(cell.dataset.index));
+    }
+  });
+});
+
+resetBtn.addEventListener('click', () => {
+  resetGame();
+});
+
+modeSelect.addEventListener('change', () => {
+  resetGame();
+});
+
+// Initialize game
+resetGame();
